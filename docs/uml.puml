@@ -1,0 +1,71 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package "controller" {
+  class MenuItemController
+  class OrderController
+}
+
+package "service" {
+  class MenuItemService
+  class OrderService
+}
+
+package "repository" {
+  class MenuItemRepositoryJdbc
+  class OrderRepositoryJdbc
+}
+
+package "model" {
+  class MenuItem {
+    - id: Long
+    - name: String
+    - price: BigDecimal
+    - isAvailable: Boolean
+  }
+
+  class Order {
+    - id: Long
+    - customerName: String
+    - orderType: String
+    - status: String
+    - createdAt: LocalDateTime
+    - items: List<OrderItem>
+  }
+
+  class OrderItem {
+    - menuItemId: Long
+    - quantity: Integer
+    - unitPrice: BigDecimal
+  }
+}
+
+package "patterns" {
+  package "singleton" {
+    class LoggingService {
+      + getInstance()
+      + info(msg: String)
+    }
+  }
+  package "factory" {
+    class OrderFactory {
+      + validateTypeSpecificFields(type, address, tableNumber)
+    }
+  }
+}
+
+' Layer dependencies
+MenuItemController --> MenuItemService
+MenuItemService --> MenuItemRepositoryJdbc
+
+OrderController --> OrderService
+OrderService --> OrderRepositoryJdbc
+OrderService --> MenuItemRepositoryJdbc
+
+' Patterns usage
+OrderService --> LoggingService
+OrderService --> OrderFactory
+
+' Domain relationship
+Order "1" o-- "*" OrderItem
+@enduml
