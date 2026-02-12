@@ -20,16 +20,16 @@ public class MenuItemService {
         this.repo = repo;
     }
 
+    @SuppressWarnings("unchecked")
     public List<MenuItem> getAll() {
+        Object cached = cache.get("menuItems");
 
-        Object cached = cache.get(MENU_CACHE_KEY);
         if (cached != null) {
             return (List<MenuItem>) cached;
         }
 
         List<MenuItem> items = repo.findAll();
-        cache.put(MENU_CACHE_KEY, items);
-
+        cache.put("menuItems", items);
         return items;
     }
 
