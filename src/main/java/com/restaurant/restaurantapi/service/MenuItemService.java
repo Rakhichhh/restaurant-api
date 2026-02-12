@@ -2,6 +2,7 @@ package com.restaurant.restaurantapi.service;
 
 import com.restaurant.restaurantapi.model.MenuItem;
 import com.restaurant.restaurantapi.repository.MenuItemRepositoryJdbc;
+import com.restaurant.restaurantapi.patterns.singleton.InMemoryCache;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,12 +12,25 @@ public class MenuItemService {
 
     private final MenuItemRepositoryJdbc repo;
 
+    //singl cache
+    private final InMemoryCache cache = InMemoryCache.getInstance();
+    private static final String MENU_CACHE_KEY = "menu_all";
+
     public MenuItemService(MenuItemRepositoryJdbc repo) {
         this.repo = repo;
     }
 
     public List<MenuItem> getAll() {
-        return repo.findAll();
+
+        Object cached = cache.get(MENU_CACHE_KEY);
+        if (cached != null) {
+            return (List<MenuItem>) cached;
+        }
+
+        List<MenuItem> items = repo.findAll();
+        cache.put(MENU_CACHE_KEY, items);
+
+        return items;
     }
 
     public MenuItem getById(Long id) {
@@ -33,16 +47,30 @@ public class MenuItemService {
             throw new IllegalArgumentException("price must be > 0");
         if (item.getIsAvailable() == null) item.setIsAvailable(true);
 
-        return repo.save(item);
+        MenuItem saved = repo.save(item);
+
+        //invalid cache after chang
+        cache.invalidate(MENU_CACHE_KEY);
+
+        return saved;
     }
 
     public MenuItem update(Long id, MenuItem item) {
         getById(id);
-        return repo.update(id, item);
+
+        MenuItem updated = repo.update(id, item);
+
+        //invalidate cache after change
+        cache.invalidate(MENU_CACHE_KEY);
+
+        return updated;
     }
 
     public void delete(Long id) {
         getById(id);
         repo.delete(id);
+
+        //invalidate cache after change
+        cache.invalidate(MENU_CACHE_KEY);
     }
 }
