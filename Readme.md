@@ -1,3 +1,17 @@
+
+## Bonus Task — In-Memory Cache
+
+A simple in-memory cache was implemented to improve performance.
+
+The method GET /api/menu-items is cached. The first request loads data
+from the database and stores it in memory. Subsequent requests return
+data from cache instead of querying the database again.
+
+The cache is implemented as a Singleton class using an in-memory Map.
+
+Cache is automatically invalidated after menu items are created, updated,
+or deleted to keep data consistent.
+
 # Restaurant API — Spring Boot REST + JDBC
 
 ## Author
